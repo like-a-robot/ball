@@ -564,11 +564,16 @@ class Settings{
         this.start();
     }
     start(){
-        this.getinfo();
-		this.add_listening_events();
+        if (this.platform === "ACAPP") {
+            this.getinfo_acapp();
+        } else {
+            this.getinfo_web();
+            this.add_listening_events();
+        }
+
     }
-	
-	add_listening_events() {
+
+    add_listening_events() {
         let outer = this;
 
         this.add_listening_events_login();
@@ -623,7 +628,7 @@ class Settings{
             }
         });
     }
-	register_on_remote() {  //
+    register_on_remote() {  //
         let outer = this;
         let username = this.$register_username.val();
         let password = this.$register_password.val();
@@ -687,8 +692,34 @@ class Settings{
         this.$register.hide();
         this.$login.show();
     }
+    acapp_login(appid, redirect_uri, scope, state) {
+        let outer = this;
+        this.root.AcWingOs.api.oauth2.authorize(appid,redirect_uri,scope,state,function(resp){
+            if(resp.result === "success"){
+                outer.username = resp.username;
+                outer.photo = resp.photo;
+                outer.hide();
+                outer.root.menu.show();
+            }
+        })
+    }
 
-    getinfo(){
+
+    getinfo_acapp(){
+        let outer = this;
+
+        $.ajax({
+            url: "https://app7472.acapp.acwing.com.cn/settings/acwing/acapp/apply_code/",
+            type: "GET",
+            success: function(resp) {
+                if (resp.result === "success") {
+                    outer.acapp_login(resp.appid, resp.redirect_uri, resp.scope, resp.state);
+                }
+            }
+        });
+
+    }
+    getinfo_web(){
         let outer = this;
         $.ajax({
             url:"https://app7472.acapp.acwing.com.cn/settings/getinfo/",
@@ -722,7 +753,7 @@ export class AcGame{
         this.id = id;
         this.$ac_game = $('#' + id);
         this.AcWingOs = AcWingOs;
-        
+
         this.settings = new Settings(this);
         this.menu = new AcGameMenu(this);
         this.playground = new AcGamePlayground(this);

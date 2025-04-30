@@ -211,17 +211,20 @@ class Settings{
 
 
     logout_on_remote() {  // 
-        if (this.platform === "ACAPP") return false;
+        if (this.platform === "ACAPP"){
+            this.root.AcWingOs.api.window.close();
+        }else{
 
-        $.ajax({
-            url: "https://app7472.acapp.acwing.com.cn/settings/logout/",
-            type: "GET",
-            success: function(resp) {
-                if (resp.result === "success") {
-                    location.reload();
+            $.ajax({
+                url: "https://app7472.acapp.acwing.com.cn/settings/logout/",
+                type: "GET",
+                success: function(resp) {
+                    if (resp.result === "success") {
+                        location.reload();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
 
